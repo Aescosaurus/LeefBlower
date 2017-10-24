@@ -20,7 +20,7 @@ int main()
 	Database db;
 	db.Add( "nItems : 12;" );
 	db.Add( "isOutsideScreen : x,y,w,h {" );
-	db.Add( "++nItems;" ); // TODO: Fix these things.
+	db.Add( "++nItems;" );
 	db.Add( "}" );
 
 	db.Print();

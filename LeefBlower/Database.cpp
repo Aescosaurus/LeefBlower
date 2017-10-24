@@ -7,7 +7,7 @@ void Database::Print() const
 	for( int i = 0; i < curEntry; ++i )
 	{
 		entries[i].Print();
-		_putch( ' ' );
+		_putch( '\t' ); _putch( '|' ); _putch( '\t' );
 		entries[i].PrintJS();
 		_putch( '\n' );
 	}
@@ -87,7 +87,7 @@ Database::Entry::Entry( char* term_in )
 	}
 	else // Use.
 	{
-		// Don't really need to write anything for js, it works anyway.
+		// Don't really need to write anything for statements, it works anyway.
 	}
 	ConvertToJS();
 }
@@ -97,6 +97,9 @@ void Database::Entry::ConvertToJS()
 	bool var = false;
 	bool func = false;
 	bool obj = false;
+
+	bool hasPlacedParenthesis = false;
+
 	int t = 0;
 	// TODO: Make this prettier with methods.
 	if( keywordType == Term::IntD || keywordType == Term::BoolD || keywordType == Term::FloatD )
@@ -110,11 +113,15 @@ void Database::Entry::ConvertToJS()
 		jsTerm[t++] = 'f'; jsTerm[t++] = 'u'; jsTerm[t++] = 'n'; jsTerm[t++] = 'c';
 		jsTerm[t++] = 't'; jsTerm[t++] = 'i'; jsTerm[t++] = 'o'; jsTerm[t++] = 'n';
 	}
-	else
+	else if( keywordType == Term::ObjD )
 	{ // function, but this time it's an object.
 		obj = true;
 		jsTerm[t++] = 'f'; jsTerm[t++] = 'u'; jsTerm[t++] = 'n'; jsTerm[t++] = 'c';
 		jsTerm[t++] = 't'; jsTerm[t++] = 'i'; jsTerm[t++] = 'o'; jsTerm[t++] = 'n';
+	}
+	else
+	{
+		// Do nothing. :>
 	}
 
 	jsTerm[t++] = ' ';
@@ -127,14 +134,21 @@ void Database::Entry::ConvertToJS()
 		{
 			if( var )
 			{
+				// TODO: Deal with spaces in a separate minifier, not here.
 				jsTerm[--t] = '=';
 				++i;
 			}
-			else // obj or func
+			else if( func || obj )
 			{
 				jsTerm[--t] = '(';
 				++i; // Deals with unnecessary spaces.
 			}
+		}
+		else if( term[i] == '{' )
+		{
+			jsTerm[t++] = ')';
+			jsTerm[t] = '{';
+			hasPlacedParenthesis = true;
 		}
 
 		++t;
@@ -155,7 +169,7 @@ void Database::Entry::ConvertToJS()
 	// 	}
 	// 	// ++t;
 	// }
-	if( func || obj )
+	if( ( func || obj ) && !hasPlacedParenthesis )
 	{
 		jsTerm[t] = ')';
 	}
