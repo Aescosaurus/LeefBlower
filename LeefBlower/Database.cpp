@@ -24,6 +24,11 @@ void Database::Add( char* term_in )
 	entries[curEntry++] = { term_in };
 }
 
+void Database::DeleteShit()
+{
+	delete[] entries;
+}
+
 Database::Entry::Entry( char* term_in )
 {
 	char firstTerm = *term_in;

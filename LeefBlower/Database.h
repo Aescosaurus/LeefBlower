@@ -39,10 +39,7 @@ public:
 public:
 	void Print() const;
 	void Add( char* term );
-	void DeleteShit()
-	{
-		delete entries;
-	}
+	void DeleteShit();
 private:
 	Entry* entries = new Entry[6969];
 	int curEntry = 0;

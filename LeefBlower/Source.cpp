@@ -1,4 +1,5 @@
 #include <conio.h>
+#include <fstream>
 
 #include "Database.h"
 
@@ -12,6 +13,7 @@ namespace aesc
 		}
 		str = 0;
 	}
+	// TODO: Read and write from and to files, respectively.
 }
 
 int main()
