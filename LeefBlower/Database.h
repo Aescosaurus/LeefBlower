@@ -41,6 +41,6 @@ public:
 	void Add( char* term );
 	void DeleteShit();
 private:
-	Entry* entries = new Entry[6969];
+	Entry* entries = new Entry[69 * 100];
 	int curEntry = 0;
 };
