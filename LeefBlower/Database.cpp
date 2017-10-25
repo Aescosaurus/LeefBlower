@@ -138,59 +138,65 @@ void Database::Entry::ConvertToJS()
 	}
 
 	jsTerm[t++] = ' ';
-
 	for( int i = 0; i < curTerm; ++i )
 	{
-		if( term[i] != ' ' )
+		if( term[i] != ' ' && term[i] != '\t' )
 		{
 			jsTerm[t] = term[i];
+
+			if( term[i] == '/' && i > 0 )
+			{
+				if( term[i - 1] == '/' )
+				{
+					isComment = true;
+				}
+			}
+			else if( var || func || obj )
+			{
+				if( term[i] == ')' )
+				{
+					hasPlacedParenthesis = true;
+				}
+
+				if( term[i] == ':' )
+				{
+					if( var )
+					{
+						// TODO: Deal with spaces in a separate minifier, not here.
+						// jsTerm[--t] = '=';
+						// ++i;
+						jsTerm[t] = '=';
+					}
+					else if( func || obj )
+					{
+						// jsTerm[--t] = '(';
+						// ++i; // Deals with unnecessary spaces.
+						jsTerm[t] = '(';
+					}
+				}
+				else if( term[i] == '{' && !hasPlacedParenthesis )
+				{
+					jsTerm[t++] = ')';
+					jsTerm[t] = '{';
+					hasPlacedParenthesis = true;
+				}
+			}
 		}
 		else
 		{
-			--t;
-		}
-
-		if( term[i] == ':' )
-		{
-			if( var )
+			if( term[i] == ' ' && term[i - 3] == 'n' && term[i - 2] == 'e' && term[i - 1] == 'w' )
 			{
-				// TODO: Deal with spaces in a separate minifier, not here.
-				// jsTerm[--t] = '=';
-				// ++i;
-				jsTerm[t] = '=';
+				jsTerm[t] = ' ';
 			}
-			else if( func || obj )
+			else
 			{
-				// jsTerm[--t] = '(';
-				// ++i; // Deals with unnecessary spaces.
-				jsTerm[t] = '(';
+				--t;
 			}
-		}
-		else if( term[i] == '{' )
-		{
-			jsTerm[t++] = ')';
-			jsTerm[t] = '{';
-			hasPlacedParenthesis = true;
 		}
 
 		++t;
 	}
-	// for( int i = 0 + t; i < 69 + t; ++i )
-	// {
-	// 	jsTerm[i] = term[i - t];
-	// 	if( term[i - t] == ':' )
-	// 	{
-	// 		if( var )
-	// 		{
-	// 			jsTerm[i] = '=';
-	// 		}
-	// 		else if( func || obj )
-	// 		{
-	// 			jsTerm[i] = '(';
-	// 		}
-	// 	}
-	// 	// ++t;
-	// }
+
 	if( ( func || obj ) && !hasPlacedParenthesis )
 	{
 		jsTerm[t++] = ')';
@@ -225,5 +231,8 @@ void Database::Entry::PrintJS() const
 
 void Database::Entry::JSCode( char* fileName )
 {
-	aesc::write_file( jsTerm,fileName );
+	if( !isComment )
+	{
+		aesc::write_file( jsTerm,fileName );
+	}
 }

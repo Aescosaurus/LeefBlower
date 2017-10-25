@@ -20,7 +20,8 @@ public:
 		FFuncD,
 		FFuncU,
 		ObjD,
-		ObjU
+		ObjU,
+		Other
 	};
 	class Entry
 	{
@@ -36,8 +37,9 @@ public:
 		char term[69];
 		char jsTerm[69 * 2];
 		int curTerm = 0;
-		Term keywordType;
+		Term keywordType = Term::Other;
 		bool isConst = false;
+		bool isComment = false;
 	};
 public:
 	void Print() const;
