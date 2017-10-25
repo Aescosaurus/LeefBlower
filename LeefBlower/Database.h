@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Aesc.h"
+
 class Database
 {
 public:
@@ -29,6 +31,7 @@ public:
 		void Print() const;
 		void PrintType() const;
 		void PrintJS() const;
+		void JSCode( char* fileName );
 	private:
 		char term[69];
 		char jsTerm[69 * 2];
@@ -39,8 +42,9 @@ public:
 public:
 	void Print() const;
 	void Add( char* term );
+	void JSCode( char* fileName );
 	void DeleteShit();
 private:
 	Entry* entries = new Entry[69 * 100];
-	int curEntry = 0;
+	int numEntries = 0;
 };

@@ -1,0 +1,1 @@
+var nItems=12;function isOutsideScreen(x,y,w,h){ ++nItems; }

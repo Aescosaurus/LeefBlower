@@ -4,7 +4,7 @@
 
 void Database::Print() const
 {
-	for( int i = 0; i < curEntry; ++i )
+	for( int i = 0; i < numEntries; ++i )
 	{
 		entries[i].Print();
 		_putch( '\t' ); _putch( '|' ); _putch( '\t' );
@@ -21,7 +21,16 @@ void Database::Add( char* term_in )
 	// {
 	// 	temp[curTemp++] = *term_in;
 	// }
-	entries[curEntry++] = { term_in };
+	entries[numEntries++] = { term_in };
+}
+
+void Database::JSCode( char* fileName )
+{
+	aesc::clear_file( fileName );
+	for( int i = 0; i < numEntries; ++i )
+	{
+		entries[i].JSCode( fileName );
+	}
 }
 
 void Database::DeleteShit()
@@ -47,7 +56,6 @@ Database::Entry::Entry( char* term_in )
 			includesSemicolon = true;
 		}
 	}
-	term_in = 0;
 
 	// Check what it is and set enum appropriately.
 	if( includesColon ) // Definition.
@@ -92,7 +100,7 @@ Database::Entry::Entry( char* term_in )
 	}
 	else // Use.
 	{
-		// Don't really need to write anything for statements, it works anyway.
+		// Don't really need to write anything for statements, they works anyway.
 	}
 	ConvertToJS();
 }
@@ -133,20 +141,29 @@ void Database::Entry::ConvertToJS()
 
 	for( int i = 0; i < curTerm; ++i )
 	{
-		jsTerm[t] = term[i];
+		if( term[i] != ' ' )
+		{
+			jsTerm[t] = term[i];
+		}
+		else
+		{
+			--t;
+		}
 
 		if( term[i] == ':' )
 		{
 			if( var )
 			{
 				// TODO: Deal with spaces in a separate minifier, not here.
-				jsTerm[--t] = '=';
-				++i;
+				// jsTerm[--t] = '=';
+				// ++i;
+				jsTerm[t] = '=';
 			}
 			else if( func || obj )
 			{
-				jsTerm[--t] = '(';
-				++i; // Deals with unnecessary spaces.
+				// jsTerm[--t] = '(';
+				// ++i; // Deals with unnecessary spaces.
+				jsTerm[t] = '(';
 			}
 		}
 		else if( term[i] == '{' )
@@ -176,8 +193,10 @@ void Database::Entry::ConvertToJS()
 	// }
 	if( ( func || obj ) && !hasPlacedParenthesis )
 	{
-		jsTerm[t] = ')';
+		jsTerm[t++] = ')';
 	}
+
+	jsTerm[t] = 0;
 }
 
 void Database::Entry::Print() const
@@ -198,13 +217,13 @@ void Database::Entry::PrintType() const
 
 void Database::Entry::PrintJS() const
 {
-	for( int i = 0; i < 69 * 2; ++i )
+	for( int i = 0; jsTerm[i] != 0; ++i )
 	{
-		// TODO: Fix this using null terminator lol.
-		if( jsTerm[i] == -52 )
-		{
-			break;
-		}
 		_putch( jsTerm[i] );
 	}
+}
+
+void Database::Entry::JSCode( char* fileName )
+{
+	aesc::write_file( jsTerm,fileName );
 }
