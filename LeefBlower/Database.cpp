@@ -4,7 +4,7 @@
 
 void Database::Print() const
 {
-	for( int i = 0; i < curEntry; ++i )
+	for( int i = 0; i < numEntries; ++i )
 	{
 		entries[i].Print();
 		_putch( '\t' ); _putch( '|' ); _putch( '\t' );
@@ -21,7 +21,21 @@ void Database::Add( char* term_in )
 	// {
 	// 	temp[curTemp++] = *term_in;
 	// }
-	entries[curEntry++] = { term_in };
+	entries[numEntries++] = { term_in };
+}
+
+void Database::JSCode( char* fileName )
+{
+	aesc::clear_file( fileName );
+	for( int i = 0; i < numEntries; ++i )
+	{
+		entries[i].JSCode( fileName );
+	}
+}
+
+void Database::DeleteShit()
+{
+	delete[] entries;
 }
 
 Database::Entry::Entry( char* term_in )
@@ -42,7 +56,6 @@ Database::Entry::Entry( char* term_in )
 			includesSemicolon = true;
 		}
 	}
-	term_in = 0;
 
 	// Check what it is and set enum appropriately.
 	if( includesColon ) // Definition.
@@ -87,7 +100,7 @@ Database::Entry::Entry( char* term_in )
 	}
 	else // Use.
 	{
-		// Don't really need to write anything for statements, it works anyway.
+		// Don't really need to write anything for statements, they works anyway.
 	}
 	ConvertToJS();
 }
@@ -125,54 +138,71 @@ void Database::Entry::ConvertToJS()
 	}
 
 	jsTerm[t++] = ' ';
-
 	for( int i = 0; i < curTerm; ++i )
 	{
-		jsTerm[t] = term[i];
-
-		if( term[i] == ':' )
+		if( term[i] != ' ' && term[i] != '\t' )
 		{
-			if( var )
+			jsTerm[t] = term[i];
+
+			if( term[i] == '/' && i > 0 )
 			{
-				// TODO: Deal with spaces in a separate minifier, not here.
-				jsTerm[--t] = '=';
-				++i;
+				if( term[i - 1] == '/' )
+				{
+					isComment = true;
+				}
 			}
-			else if( func || obj )
+			else if( var || func || obj )
 			{
-				jsTerm[--t] = '(';
-				++i; // Deals with unnecessary spaces.
+				if( term[i] == ')' )
+				{
+					hasPlacedParenthesis = true;
+				}
+
+				if( term[i] == ':' )
+				{
+					if( var )
+					{
+						// TODO: Deal with spaces in a separate minifier, not here.
+						// jsTerm[--t] = '=';
+						// ++i;
+						jsTerm[t] = '=';
+					}
+					else if( func || obj )
+					{
+						// jsTerm[--t] = '(';
+						// ++i; // Deals with unnecessary spaces.
+						jsTerm[t] = '(';
+					}
+				}
+				else if( term[i] == '{' && !hasPlacedParenthesis )
+				{
+					jsTerm[t++] = ')';
+					jsTerm[t] = '{';
+					hasPlacedParenthesis = true;
+				}
 			}
 		}
-		else if( term[i] == '{' )
+		else
 		{
-			jsTerm[t++] = ')';
-			jsTerm[t] = '{';
-			hasPlacedParenthesis = true;
+			if( term[i] == ' ' && term[i - 3] == 'n' && term[i - 2] == 'e' && term[i - 1] == 'w' )
+			{
+				jsTerm[t] = ' ';
+			}
+			else
+			{
+				--t;
+			}
 		}
 
 		++t;
 	}
-	// for( int i = 0 + t; i < 69 + t; ++i )
-	// {
-	// 	jsTerm[i] = term[i - t];
-	// 	if( term[i - t] == ':' )
-	// 	{
-	// 		if( var )
-	// 		{
-	// 			jsTerm[i] = '=';
-	// 		}
-	// 		else if( func || obj )
-	// 		{
-	// 			jsTerm[i] = '(';
-	// 		}
-	// 	}
-	// 	// ++t;
-	// }
+
 	if( ( func || obj ) && !hasPlacedParenthesis )
 	{
-		jsTerm[t] = ')';
+		jsTerm[t++] = ')';
 	}
+
+	jsTerm[t] = 0;
 }
 
 void Database::Entry::Print() const
@@ -193,13 +223,16 @@ void Database::Entry::PrintType() const
 
 void Database::Entry::PrintJS() const
 {
-	for( int i = 0; i < 69 * 2; ++i )
+	for( int i = 0; jsTerm[i] != 0; ++i )
 	{
-		// TODO: Fix this using null terminator lol.
-		if( jsTerm[i] == -52 )
-		{
-			break;
-		}
 		_putch( jsTerm[i] );
+	}
+}
+
+void Database::Entry::JSCode( char* fileName )
+{
+	if( !isComment )
+	{
+		aesc::write_file( jsTerm,fileName );
 	}
 }

@@ -1,0 +1,23 @@
+Player : x_in,y_in
+{
+	x : x_in;
+	y : y_in;
+	// 
+	update : grav
+	{
+		if( y > 0.0 )
+		{
+			y += grav;
+		}
+	}
+}
+
+leef :
+{
+	pl = new Player();
+	gravity : 9.8;
+	while( true )
+	{
+		pl.update( gravity );
+	}
+}

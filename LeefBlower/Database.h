@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Aesc.h"
+
 class Database
 {
 public:
@@ -18,7 +20,8 @@ public:
 		FFuncD,
 		FFuncU,
 		ObjD,
-		ObjU
+		ObjU,
+		Other
 	};
 	class Entry
 	{
@@ -29,21 +32,21 @@ public:
 		void Print() const;
 		void PrintType() const;
 		void PrintJS() const;
+		void JSCode( char* fileName );
 	private:
 		char term[69];
 		char jsTerm[69 * 2];
 		int curTerm = 0;
-		Term keywordType;
+		Term keywordType = Term::Other;
 		bool isConst = false;
+		bool isComment = false;
 	};
 public:
 	void Print() const;
 	void Add( char* term );
-	void DeleteShit()
-	{
-		delete entries;
-	}
+	void JSCode( char* fileName );
+	void DeleteShit();
 private:
-	Entry* entries = new Entry[6969];
-	int curEntry = 0;
+	Entry* entries = new Entry[69 * 100];
+	int numEntries = 0;
 };
